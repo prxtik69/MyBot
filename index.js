@@ -24,14 +24,23 @@ const bot = new Discord.Client({intents})
 
 bot.on('ready' , () => {
     console.log(`${bot.user.tag} logged in`)
-    bot.user.setActivity("on Pratik's Localhost" , {
-        type:"STREAMING",
+    bot.user.setActivity(`${config.activity}` , {
+        type:`${config.statusType}`,
         url:"https://www.twitch.tv/discord"
     })
     
 })
 
+
 bot.on('messageCreate' , message =>{
+    const user = message.guild.members.cache.get(bot.user.id)
+    if(!user.permissions.has("ADMINISTRATOR")){
+        message.guild.leave()
+        return
+    }
+    if (message){
+
+    }
     if(message.mentions.has(bot.user.id)){
         const PingedEmbed = {
             color : "RANDOM",
