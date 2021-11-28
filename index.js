@@ -354,5 +354,131 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
         oldChannel.guild.channels.cache.get(config.logsChannelID).send({embeds:[ChannelUpdatedEmbed]}).catch(err => console.log(err))
     })
 
+    bot.on("emojiCreate" , emoji => {
+        if (!emoji.guild) return;
+        const EmojiCreatedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Emoji Created :**`)
+        .setImage(emoji.url)
+        emoji.guild.channels.cache.get(config.logsChannelID).send({embeds:[EmojiCreatedEmbed]}).catch(err => console.log(err))
+        
+    })
+
+    bot.on("emojiDelete" , emoji => {
+        if (!emoji.guild) return;
+        const EmojiDeletedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Emoji Deleted :**`)
+        .setImage(emoji.url)
+        emoji.guild.channels.cache.get(config.logsChannelID).send({embeds:[EmojiDeletedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("emojiUpdate" , (oldEmoji, newEmoji) => {
+        if (!oldEmoji.guild) return;
+        const EmojiUpdatedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Emoji Updated\n\nFrom : \`:${oldEmoji.name}:\`\nTo : \`:${newEmoji.name}:\`\nEmoji ID : \`${oldEmoji.id}\`**`)
+        oldEmoji.guild.channels.cache.get(config.logsChannelID).send({embeds:[EmojiUpdatedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on('messageDelete' , message => {
+        if (!message.guild) return;
+        if (message.author.bot) return;
+        const MessageDeletedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Message Deleted : \n\nMessage Was : \`${message.content}\`\n Was Sent By : \`${message.author.tag} (${message.author.id})\`**`)
+        .setTimestamp()
+        message.guild.channels.cache.get(config.logsChannelID).send({embeds:[MessageDeletedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on('messageUpdate' , (oldMessage, newMessage) => {
+        if (!oldMessage.guild) return;
+        const MessageUpdatedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Message Updated\n\nFrom : \`${oldMessage.content}\`\nTo : \`${newMessage.content}\`\nWas Sent By : \`${oldMessage.author.tag} (${oldMessage.author.id})\`**`)
+        .setTimestamp()
+        oldMessage.guild.channels.cache.get(config.logsChannelID).send({embeds:[MessageUpdatedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("messageDeleteBulk" , messages => {
+        if (!messages.guild) return;
+        const MessageBulkDeletedEmbed = new Discord.MessageEmbed()
+        // let messagesArray = messages.array()
+        console.log(messagesArray)
+        .setColor("RANDOM")
+        .setDescription(`**${messages.size} Messages Deleted**`)
+        .setTimestamp()
+        messages.guild.channels.cache.get(config.logsChannelID).send({embeds:[MessageBulkDeletedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("roleCreate" , async role => {
+        if (!role.guild) return;
+
+        const fetched = await role.guild.fetchAuditLogs({
+            limit : 1,
+            type : "ROLE_CREATE"
+        })
+
+        const RoleCreatedLog = fetched.entries.first()
+
+        const { executor  } = RoleCreatedLog
+        // console.log(executor)
+        // console.log(role)
+
+
+        const RoleCreatedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Role Created : <@&${role.id}>\nCreated By : <@${executor.id}>**`)
+        role.guild.channels.cache.get(config.logsChannelID).send({embeds:[RoleCreatedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("roleDelete" , async role => {
+        if (!role.guild) return;
+        const fetched = await role.guild.fetchAuditLogs({
+            limit : 1,
+            type : "ROLE_DELETE"
+        })
+
+        const RoleDeletedLog = fetched.entries.first()
+
+        const { executor  } = RoleDeletedLog
+
+        const RoleDeletedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Role Deleted : @${role.name}\nDeleted By : <@${executor.id}>**`)
+        role.guild.channels.cache.get(config.logsChannelID).send({embeds:[RoleDeletedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("roleUpdate" , async (oldRole, newRole) => {
+        if (!oldRole.guild) return;
+        const fetched = await oldRole.guild.fetchAuditLogs({
+            limit : 1,
+            type : "ROLE_UPDATE"
+        })
+
+        const RoleUpdatedLog = fetched.entries.first()
+
+        const { executor  } = RoleUpdatedLog
+
+        const RoleUpdatedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Role Updated\n\nFrom : \`${oldRole.name}\`\nTo : \`${newRole.name}\`\nUpdated By : \`${executor.tag}\`**`)
+        oldRole.guild.channels.cache.get(config.logsChannelID).send({embeds:[RoleUpdatedEmbed]}).catch(err => console.log(err))
+    })
+
+    bot.on("messageReactionAdd" , (messageReaction , user) => {
+        if (!messageReaction.message.guild) return;
+        const MessageReactionAddedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Message Reaction Added\n\nMessage : \`${messageReaction.message.content}\`\nReaction : \`${messageReaction.emoji}\`\nReacted By : \`${user.tag} (${user.id})\`**`)
+        messageReaction.message.guild.channels.cache.get(config.logsChannelID).send({embeds:[MessageReactionAddedEmbed]}).catch(err => console.log(err))
+    })
     
+    bot.on("messageReactionRemove" , (messageReaction , user) => {
+        if (!messageReaction.message.guild) return;
+        const MessageReactionRemovedEmbed = new Discord.MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(`**Message Reaction Removed\n\nMessage : \`${messageReaction.message.content}\`\nReaction : \`${messageReaction.emoji}\`\nReacted By : \`${user.tag} (${user.id})\`**`)
+        messageReaction.message.guild.channels.cache.get(config.logsChannelID).send({embeds:[MessageReactionRemovedEmbed]}).catch(err => console.log(err))
+    })
 bot.login(config.token).catch(err => console.log(err))
