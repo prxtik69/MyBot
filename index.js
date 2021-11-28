@@ -1,9 +1,36 @@
 const Discord = require('discord.js')
 const config = require('./Data/config.json')
-const intents = new Discord.Intents(["GUILDS" , "GUILD_MESSAGES" , "GUILD_MESSAGE_REACTIONS" , "GUILD_MEMBERS" , "GUILD_VOICE_STATES"])
+const intents = new Discord.Intents([
+    "GUILDS",
+    "GUILD_MEMBERS",
+    "GUILD_BANS",
+    "GUILD_EMOJIS_AND_STICKERS",
+    "GUILD_INTEGRATIONS",
+    "GUILD_WEBHOOKS",
+    "GUILD_INVITES",
+    "GUILD_VOICE_STATES",
+    "GUILD_PRESENCES",
+    "GUILD_MESSAGES",
+    "GUILD_MESSAGE_REACTIONS",
+    "GUILD_MESSAGE_TYPING",
+    "DIRECT_MESSAGES",
+    "DIRECT_MESSAGE_REACTIONS",
+    "DIRECT_MESSAGE_TYPING"
+])
+
 const bot = new Discord.Client({intents})
 
-bot.on('ready' , () => console.log('Bot is ready'))
+
+
+bot.on('ready' , () => {
+    console.log(`${bot.user.tag} logged in`)
+    bot.user.setActivity("on Pratik's Localhost" , {
+        type:"STREAMING",
+        url:"https://www.twitch.tv/discord"
+    })
+    
+})
+
 bot.on('messageCreate' , message =>{
     if(message.mentions.has(bot.user.id)){
         const PingedEmbed = {
@@ -26,7 +53,7 @@ bot.on('messageCreate' , message =>{
         const PingEmbed = new Discord.MessageEmbed()
         .setColor('RANDOM')
         
-        .setDescription(`${config.SuccessEmoji} Latency is \`${Date.now() - message.createdTimestamp}\`ms. API Latency is \`${Math.round(bot.ws.ping)}\`ms`).catch(err => console.log(err))
+        .setDescription(`**${config.SuccessEmoji} Latency is \`${Date.now() - message.createdTimestamp}\`ms. API Latency is \`${Math.round(bot.ws.ping)}\`ms**`)
         message.channel.send({embeds : [PingEmbed]}).catch(err => console.log(err))
     }
      
@@ -59,7 +86,7 @@ bot.on('messageCreate' , message =>{
             message.channel.bulkDelete(amount , true).catch(err => console.log(err))
         const PurgeEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`${config.SuccessEmoji} **Deleted \`${amount}\` message(s)**`).catch(err => console.log(err))
+        .setDescription(`${config.SuccessEmoji} **Deleted \`${amount}\` message(s)**`)
         message.channel.send({embeds : [PurgeEmbed]}).catch(err => console.log(err))
         }
         
@@ -77,7 +104,7 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
 
         const MemberCountEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`**Total Members in Server : \`${message.guild.memberCount}\`\nCurrent Bots in Server : \`${BotsInServer}\`**`).catch(err => console.log(err))
+        .setDescription(`**Total Members in Server : \`${message.guild.memberCount}\`\nCurrent Bots in Server : \`${BotsInServer}\`**`)
         message.channel.send({embeds: [MemberCountEmbed]}).catch(err => console.log(err))
     }
 
@@ -92,7 +119,7 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
 
         const NotModEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`${config.crossEmoji} **You do not have Moderator Role / Permission to Kick Members**`).catch(err => console.log(err))
+        .setDescription(`${config.crossEmoji} **You do not have Moderator Role / Permission to Kick Members**`)
         if (!Mod){
             message.channel.send({embeds : [NotModEmbed]}).catch(err => console.log(err))
         }
@@ -101,7 +128,7 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
             if (!Target){
                 const Nottarget = new Discord.MessageEmbed()
                 .setColor("RANDOM")
-                .setDescription(`${config.crossEmoji}**Please Mention someone to Kick\n\n__Usage__ : \n\n\`${config.prefix}kick @user\`\n\`${config.prefix}kick @Pratikk@6969\`**`).cache(err => console.log(err))
+                .setDescription(`${config.crossEmoji}**Please Mention someone to Kick\n\n__Usage__ : \n\n\`${config.prefix}kick @user\`\n\`${config.prefix}kick @Pratikk@6969\`**`)
 
                 message.channel.send({embeds : [Nottarget]}).catch(err => console.log(err))
             }
@@ -127,52 +154,70 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
 
 // <---------------------------- BAN COMMAND ----------------------------------->
 
-
-
-    if(command === "ban"){
-        let Mod = message.member.roles.cache.has(config.modRoleID) ||  message.member.permissions.has("BAN_MEMBERS")
-        let reason = args.slice(1).join(" ");
+    if (command === "ban"){
+        const NoBanPermsEmbed = {
+            color:"RANDOM",
+            description:`${config.crossEmoji} ** You do not have permissions to ban a user.**`
+        }
+        const NoTargetEmbed = {
+            color:"RANDOM",
+            description:`${config.crossEmoji}** Please Mention someone you want BAN\n\n__Usage__ : \n\n\`${config.prefix}ban @user <reason>\`\n\`${config.prefix}ban @Pratikk#6969 For Being Cute\`**`
+        }
         
 
-        const NotModEmbed = new Discord.MessageEmbed()
-        .setColor("RANDOM")
-        .setDescription(`${config.crossEmoji} **You do not have Moderator Role / Permission to BAN Members**`)
-        if (!Mod){
-            message.channel.send({embeds : [NotModEmbed]}).catch(err => console.log(err))
+        if (!message.member.permissions.has("BAN_MEMBERS")){
+            message.channel.send({embeds : [NoBanPermsEmbed]})
+            return;
         }
-        if (Mod){
-            let Target = message.mentions.members.first() || args[0]
+        if(!message.member.roles.cache.has(config.modRoleID)){
+            message.channel.send({embeds : [NoBanPermsEmbed]})
+            return;
+        }
+        let Target = message.mentions.members.first()
+        let reason = args.slice(1).join(" ");
+        
+        if(!Target){
+            message.channel.send({embeds : [NoTargetEmbed]})
+            return;
+        }
+
+        
+
+        else if (Target && message.member.roles.cache.has(config.modRoleID) && message.member.permissions.has("BAN_MEMBERS") && Target.bannable){
+            if(!reason){
+                reason = "No Reason Provided"
+            }
+            const BannedEmbed = {
+                color:"RANDOM",
+                description:`${config.SuccessEmoji} **Banned ${Target}\n\nBy : \`${message.author.username}\`\nFor : \`${reason}\`**`
+            }
+            const BannedDMEmbed = {
+                color:"RANDOM",
+                description:`**You have been Banned from ${message.guild}\n\nBy : \`${message.author.username}\`\nFor : \`${reason}\`**`
+            }
+
+            Target.ban({ days: 7, reason: 'They deserved it' })
+  .then(console.log)
+  .catch(console.error);
             
-            if (!Target){
-                const Nottarget = new Discord.MessageEmbed()
-                .setColor("RANDOM")
-                .setDescription(`${config.crossEmoji}**Please Mention someone to Ban\n\n__Usage__ : \n\n\`${config.prefix}ban @user\`\n\`${config.prefix}ban @Pratikk@6969\`**`).catch(err => console.log(err))
+            message.channel.send({embeds : [BannedEmbed]}).then(Target.send({embeds : [BannedDMEmbed]}))
 
-                message.channel.send({embeds : [Nottarget]})
+        if(config.logsChannelID){
+            const UserBannedEmbed = {
+                color:"RANDOM",
+                description:`**User Banned : ${Target}**`
             }
-        if (Target.id === bot.user.id){
-        message.channel.send(`${config.crossEmoji}** You cannot ban me with my commands XD :joy:**`)
-        return
-    }
-            else{
-                if (!reason){
-                    reason = "No Reason Provided"
-                }
-                Target.ban(reason).catch(err => console.log(err))
-                const BannedEmbed = new Discord.MessageEmbed()
-                .setColor("RANDOM")
-                .setDescription(`${config.SuccessEmoji} **${Target} has been banned.**\n\n**By : \`${message.author.username}\`\nReason : \`${reason}\`**`)
-                message.channel.send({embeds:[BannedEmbed]}).catch(err => console.log(err))
-
-                const BannedDMEmbed = new Discord.MessageEmbed()
-                .setColor("RANDOM")
-                .setDescription(`**You have been banned from __${message.guild}__.**\n\n**By : \`${message.author.username}\`\nReason : \`${reason}\`**`)
-                Target.send({embeds:[BannedDMEmbed]}).catch(err => console.log(err))
-                
-            }
+            let LogChannel = message.guild.channels.cache.get(config.logsChannelID)
+            LogChannel.send({embeds : [UserBannedEmbed]}).catch(err => console.log(err))
         }
+            
+
+        }
+
     }
 
+
+   
 
 // <---------------------------- PULL COMMAND ----------------------------------->
 
@@ -182,7 +227,12 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
 
         const member = message.mentions.members.first();
         if(!member){
-            message.channel.send('Please mention a member that you want to pull in your vc!');
+            const NoTargetToPull = {
+                color:"RANDOM",
+                description:`${config.crossEmoji} **Please mention a member that you want to pull in your vc!**`
+            }
+            message.channel.send({embeds : [NoTargetToPull]});
+            return;
         }
         const ModNotInVC = {
             color:"RANDOM",
@@ -233,30 +283,43 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
             return
         }
         
-        const member = message.mentions.members.first();
+        const Target = message.mentions.members.first();
+        // const TargetID = message.guild.members.cache.get(Target.id);
+        // const Targett = message.guild.mem
 
-        if(!member.voice.channel) {
-        const UserNotInVCtoDisconnect = {
-            color:"RANDOM",
-            description:`**${config.crossEmoji} ${message.author} , they need be in a voice channel before you can actually disconnect an user**`
+        if(!Target){
+            message.channel.send("ok")
+            return;
         }
-        message.channel.send({embeds:[UserNotInVCtoDisconnect]})
-        return;
+
+        if(!Target.voice.channel) {
+            // const UserNotInVCtoDisconnect = {
+            //     color:"RANDOM",
+            //     description:`**${config.crossEmoji} ${message.author} , they need be in a voice channel before you can actually disconnect an user**`
+            // }
+            const UserNotInVCtoDisconnect = new Discord.MessageEmbed()
+            .setColor("RANDOM")
+            .setDescription(`**${config.crossEmoji} ${message.author} , they need be in a voice channel before you can actually disconnect an user**`)
+            message.channel.send({embeds:[UserNotInVCtoDisconnect]})
+            return;
     }
-        member.voice.disconnect().catch(err => console.log(err))
+        Target.voice.disconnect().catch(err => console.log(err))
         const DisconnectedEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`${config.SuccessEmoji} **Disconnected ${member} from Voice Channel ${member.voice.channel}**`)
+        .setDescription(`${config.SuccessEmoji} **Disconnected ${Target} from Voice Channel ${Target.voice.channel}**`)
         message.channel.send({embeds:[DisconnectedEmbed]}).catch(err => console.log(err))
         const DisconnectedLog = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`**${member} has been disconnected from Voice Channel ${member.voice.channel}**`)
+        .setDescription(`**${Target} has been disconnected from Voice Channel ${Target.voice.channel}**`)
 
         message.guild.channels.cache.get(config.logsChannelID).send({embeds:[DisconnectedLog]})
     }
     
     
 })
+
+// <---------------------- LOGS -------------------------->
+
 
     bot.on("channelCreate" , channel => {
         if (!channel.guild) return;
@@ -270,7 +333,7 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
         if (!channel.guild) return;
         const ChannelDeletedEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`**Channel Deleted : ${channel}**`)
+        .setDescription(`**Channel Deleted : #${channel.name}**`)
         channel.guild.channels.cache.get(config.logsChannelID).send({embeds:[ChannelDeletedEmbed]}).catch(err => console.log(err))
     })
 
@@ -278,14 +341,9 @@ if (command === "membercount" || command === "mc" && message.member.permissions.
         if (!oldChannel.guild) return;
         const ChannelUpdatedEmbed = new Discord.MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(`**Channel name Updated : ${oldChannel} **`)
+        .setDescription(`**Channel name Updated\n\nFrom : \`#${oldChannel.name}\`\nTo : \`#${newChannel.name}\`\nChannel ID : \`${oldChannel.id}\`**`)
         oldChannel.guild.channels.cache.get(config.logsChannelID).send({embeds:[ChannelUpdatedEmbed]}).catch(err => console.log(err))
     })
 
-    bot.on("guildBanAdd" , (guild, user) => {
-        const UserBannedEmbed = new Discord.MessageEmbed()
-        .setColor("RANDOM")
-        .setDescription(`**User Banned : ${user}**`)
-        guild.channels.cache.get(config.logsChannelID).send({embeds:[UserBannedEmbed]}).catch(err => console.log(err))
-    })
+    
 bot.login(config.token).catch(err => console.log(err))
