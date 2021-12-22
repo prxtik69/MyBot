@@ -1,5 +1,5 @@
 const Discord = require('discord.js')
-const config = require('./Data/config.json')
+const config = require('config.json')
 const intents = new Discord.Intents([
     "GUILDS",
     "GUILD_MEMBERS",
